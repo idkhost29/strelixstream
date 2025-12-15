@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, TouchEvent } from "react";
 import { Link } from "react-router-dom";
 import { Play, Info, Star } from "lucide-react";
 import { MediaItem, getBackdropUrl } from "@/lib/tmdb";
@@ -13,23 +13,55 @@ interface HeroSectionProps {
 const HeroSection = ({ items, isLoading }: HeroSectionProps) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const touchStartX = useRef(0);
+  const touchEndX = useRef(0);
 
   const featured = items.slice(0, 5);
   const current = featured[currentIndex];
 
+  const goToSlide = (index: number) => {
+    setIsTransitioning(true);
+    setTimeout(() => {
+      setCurrentIndex(index);
+      setIsTransitioning(false);
+    }, 300);
+  };
+
+  const goNext = () => {
+    goToSlide((currentIndex + 1) % featured.length);
+  };
+
+  const goPrev = () => {
+    goToSlide((currentIndex - 1 + featured.length) % featured.length);
+  };
+
+  const handleTouchStart = (e: TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchMove = (e: TouchEvent) => {
+    touchEndX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = () => {
+    const diff = touchStartX.current - touchEndX.current;
+    const threshold = 50;
+
+    if (Math.abs(diff) > threshold) {
+      if (diff > 0) {
+        goNext();
+      } else {
+        goPrev();
+      }
+    }
+  };
+
   useEffect(() => {
     if (featured.length <= 1) return;
     
-    const interval = setInterval(() => {
-      setIsTransitioning(true);
-      setTimeout(() => {
-        setCurrentIndex((prev) => (prev + 1) % featured.length);
-        setIsTransitioning(false);
-      }, 300);
-    }, 8000);
-
+    const interval = setInterval(goNext, 8000);
     return () => clearInterval(interval);
-  }, [featured.length]);
+  }, [featured.length, currentIndex]);
 
   if (isLoading) {
     return (
@@ -49,7 +81,12 @@ const HeroSection = ({ items, isLoading }: HeroSectionProps) => {
   const watchPath = type === "movie" ? `/watch/movie/${current.id}` : `/tv/${current.id}`;
 
   return (
-    <section className="relative h-[70vh] md:h-[85vh] overflow-hidden">
+    <section 
+      className="relative h-[70vh] md:h-[85vh] overflow-hidden touch-pan-y"
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+    >
       {/* Background Image */}
       <div
         className={cn(
@@ -125,17 +162,11 @@ const HeroSection = ({ items, isLoading }: HeroSectionProps) => {
           {featured.map((_, index) => (
             <button
               key={index}
-              onClick={() => {
-                setIsTransitioning(true);
-                setTimeout(() => {
-                  setCurrentIndex(index);
-                  setIsTransitioning(false);
-                }, 300);
-              }}
+              onClick={() => goToSlide(index)}
               className={cn(
                 "w-2 h-2 rounded-full transition-all duration-300",
                 index === currentIndex
-                  ? "w-8 bg-primary"
+                  ? "w-8 bg-foreground"
                   : "bg-muted-foreground/50 hover:bg-muted-foreground"
               )}
             />

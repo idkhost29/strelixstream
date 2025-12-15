@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Search, Menu, X, Film, Tv, Sparkles, Heart } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "./ui/button";
+import logo from "@/assets/logo.png";
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -47,16 +48,12 @@ const Navbar = () => {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16 md:h-20">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2 group">
-            <div className="relative">
-              <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg gradient-primary flex items-center justify-center shadow-glow">
-                <Film className="w-4 h-4 md:w-5 md:h-5 text-primary-foreground" />
-              </div>
-              <div className="absolute inset-0 rounded-lg gradient-primary opacity-50 blur-md group-hover:opacity-75 transition-opacity" />
-            </div>
-            <span className="font-display text-xl md:text-2xl font-bold text-gradient">
-              Strelix
-            </span>
+          <Link to="/" className="flex items-center group">
+            <img 
+              src={logo} 
+              alt="Strelix" 
+              className="h-10 md:h-12 w-auto transition-transform group-hover:scale-105" 
+            />
           </Link>
 
           {/* Desktop Navigation */}
