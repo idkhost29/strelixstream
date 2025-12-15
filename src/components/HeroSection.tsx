@@ -20,20 +20,29 @@ const HeroSection = ({ items, isLoading }: HeroSectionProps) => {
   const current = featured[currentIndex];
 
   const goToSlide = (index: number) => {
+    if (isTransitioning || index === currentIndex) return;
     setIsTransitioning(true);
-    setTimeout(() => {
-      setCurrentIndex(index);
-      setIsTransitioning(false);
-    }, 300);
+    setCurrentIndex(index);
   };
 
   const goNext = () => {
-    goToSlide((currentIndex + 1) % featured.length);
+    if (isTransitioning) return;
+    setIsTransitioning(true);
+    setCurrentIndex((prev) => (prev + 1) % featured.length);
   };
 
   const goPrev = () => {
-    goToSlide((currentIndex - 1 + featured.length) % featured.length);
+    if (isTransitioning) return;
+    setIsTransitioning(true);
+    setCurrentIndex((prev) => (prev - 1 + featured.length) % featured.length);
   };
+
+  useEffect(() => {
+    if (isTransitioning) {
+      const timer = setTimeout(() => setIsTransitioning(false), 500);
+      return () => clearTimeout(timer);
+    }
+  }, [isTransitioning]);
 
   const handleTouchStart = (e: TouchEvent) => {
     touchStartX.current = e.touches[0].clientX;
@@ -57,11 +66,11 @@ const HeroSection = ({ items, isLoading }: HeroSectionProps) => {
   };
 
   useEffect(() => {
-    if (featured.length <= 1) return;
+    if (featured.length <= 1 || isTransitioning) return;
     
     const interval = setInterval(goNext, 8000);
     return () => clearInterval(interval);
-  }, [featured.length, currentIndex]);
+  }, [featured.length, isTransitioning]);
 
   if (isLoading) {
     return (
