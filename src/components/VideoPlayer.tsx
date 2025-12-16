@@ -1,10 +1,6 @@
 import { useState, useEffect } from "react";
 import { setupProgressListener } from "@/lib/vidlink";
-import {
-  videoServers,
-  getDefaultServer,
-  setDefaultServer,
-} from "@/lib/servers";
+import { videoServers, getDefaultServer, setDefaultServer } from "@/lib/servers";
 import { Button } from "./ui/button";
 import { cn } from "@/lib/utils";
 
@@ -15,12 +11,7 @@ interface VideoPlayerProps {
   episode?: number;
 }
 
-const VideoPlayer = ({
-  type,
-  tmdbId,
-  season,
-  episode,
-}: VideoPlayerProps) => {
+const VideoPlayer = ({ type, tmdbId, season, episode }: VideoPlayerProps) => {
   const [currentServer, setCurrentServer] = useState(getDefaultServer());
 
   useEffect(() => {
@@ -32,9 +23,7 @@ const VideoPlayer = ({
     setDefaultServer(serverId);
   };
 
-  const server =
-    videoServers.find((s) => s.id === currentServer) || videoServers[0];
-
+  const server = videoServers.find((s) => s.id === currentServer) || videoServers[0];
   const embedUrl =
     type === "movie"
       ? server.getMovieUrl(tmdbId)
@@ -44,16 +33,16 @@ const VideoPlayer = ({
     <div className="space-y-4">
       {/* Server Selector */}
       <div className="flex flex-wrap gap-2">
-        <span className="text-sm text-muted-foreground self-center mr-2">
-          Server:
-        </span>
+        <span className="text-sm text-muted-foreground self-center mr-2">Server:</span>
         {videoServers.map((s) => (
           <Button
             key={s.id}
             variant={s.id === currentServer ? "default" : "outline"}
             size="sm"
             onClick={() => handleServerChange(s.id)}
-            className={cn(s.id === currentServer && "hover-glow")}
+            className={cn(
+              s.id === currentServer && "hover-glow"
+            )}
           >
             {s.name}
           </Button>
@@ -62,20 +51,12 @@ const VideoPlayer = ({
 
       {/* Video Player */}
       <div className="relative w-full aspect-video bg-black rounded-xl overflow-hidden shadow-card">
-        {/* Anti-click redirect layer */}
-        <div
-          className="absolute inset-0 z-10"
-          style={{ pointerEvents: "none" }}
-        />
-
         <iframe
-          key={${currentServer}-${tmdbId}-${season}-${episode}}
+          key={`${currentServer}-${tmdbId}-${season}-${episode}`}
           src={embedUrl}
           className="absolute inset-0 w-full h-full"
           allowFullScreen
-          referrerPolicy="no-referrer"
-          sandbox="allow-scripts allow-same-origin allow-presentation"
-          allow="autoplay; encrypted-media; picture-in-picture"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
         />
       </div>
     </div>
